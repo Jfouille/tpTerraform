@@ -43,7 +43,7 @@ resource "docker_network" "back-tier-network" {
 # =======================
 
 resource "docker_volume" "db-data" {
-  name = "db-data"
+  name = "db-data" #Volume à part
 }
 
 resource "docker_volume" "back-tier" {
@@ -62,6 +62,21 @@ resource "docker_image" "redisImg" {
 resource "docker_container" "redis" {
     name  = "redis"
     image = docker_image.redisImg.image_id
+
+    volumes {
+        host_path = "/tpTerraform/example-voting-app-main/healthchecks"
+        container_path = "/healthchecks"
+    }
+
+    healthcheck {
+      test = ["/healthchecks/redis.sh"]
+      interval = "5s"
+    }
+
+    networks_advanced {
+        name = "back-tier"
+    }
+
 }
 
 
@@ -73,14 +88,22 @@ resource "docker_image" "postgresImg" {
 }
 
 resource "docker_container" "db" {
+
     name  = "db"
     image = docker_image.postgresImg.image_id
     env = ["POSTGRES_USER=postgres", "POSTGRES_PASSWORD=postgres"]
 
-    volumes {
-        volume_name = docker_volume.db-data.name
-        container_path = "/var/lib/postgresql/data"
+    mounts {
+        target = "/var/lib/postgresql/data"
+        source = docker_volume.db-data.name
+        type = "volume"
     }
+
+    volumes {
+        host_path = "/tpTerraform/example-voting-app-main/healthchecks"
+        container_path = "/healthchecks"
+    }
+
 
     healthcheck {
       test = ["/healthchecks/postgres.sh"]
@@ -102,12 +125,16 @@ resource "docker_image" "vote-frontend" {
     name = "vote-frontend"
     build {
         context = "./example-voting-app-main/vote"
+        target = "dev"  
     }
 }
 
 resource "docker_container" "vote" {
     name  = "vote"
     image = docker_image.vote-frontend.image_id
+
+    depends_on = [docker_container.redis]
+
     ports {
         internal = "80"
         external = "5000"
@@ -123,11 +150,9 @@ resource "docker_container" "vote" {
         start_period = "10s"
     }
     volumes {
-        name = "vote"
-        host_path =  = "./vote:/usr/local/app"
-
-        # volume_name = docker_volume.db-data.name
-        # container_path = "./vote:/usr/local/app"
+        host_path = "/tpTerraform/example-voting-app-main/vote"
+        container_path = "/usr/local/app"
+        volume_name = "vote"
     }
 
     networks_advanced {
@@ -174,6 +199,12 @@ resource "docker_container" "worker" {
         host = "db"
         ip = docker_container.db.network_data[0].ip_address
     }
+    networks_advanced {
+        name = "back-tier"
+    }
+
+     depends_on = [docker_container.db, docker_container.redis]
+
 }
 
 # =======================
@@ -187,8 +218,12 @@ resource "docker_image" "vote-result" {
 }
 
 resource "docker_container" "result" {
+
     name  = "vote_result"
+
     image = docker_image.vote-result.image_id
+
+     depends_on = [docker_container.db]
     
     ports {
         internal = "80"
@@ -203,4 +238,14 @@ resource "docker_container" "result" {
         host = "db"
         ip = docker_container.db.network_data[0].ip_address
     }
+
+    networks_advanced {
+        name = "back-tier"
+    }
+
+    networks_advanced {
+        name = "front-tier"
+    }
 }
+
+
