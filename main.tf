@@ -25,6 +25,8 @@ terraform {
 }
 
 
+
+
 # =======================
 # NETWORKS
 # =======================
@@ -46,9 +48,6 @@ resource "docker_volume" "db-data" {
   name = "db-data" #Volume à part
 }
 
-resource "docker_volume" "back-tier" {
-  name = "back-tier"
-}
 
 
 
@@ -125,7 +124,6 @@ resource "docker_image" "vote-frontend" {
     name = "vote-frontend"
     build {
         context = "./example-voting-app-main/vote"
-        target = "dev"  
     }
 }
 
@@ -139,9 +137,7 @@ resource "docker_container" "vote" {
         internal = "80"
         external = "5000"
     }
-    env = [
-        "GET_HOSTS_FROM=dns"
-    ]
+    
     healthcheck {
         test = ["CMD", "curl", "-f", "http://localhost"]
         interval = "15s"
@@ -163,14 +159,6 @@ resource "docker_container" "vote" {
         name = "front-tier"
     }
 
-    host {
-        host = "redis-leader"
-        ip = docker_container.redis.network_data[0].ip_address
-    }
-    host {
-        host = "redis-follower"
-        ip = docker_container.redis.network_data[0].ip_address
-    }
 }
 
 output "app_endpoint" {
@@ -190,20 +178,14 @@ resource "docker_image" "vote-worker" {
 }
 
 resource "docker_container" "worker" {
-    name  = "vote_worker"
+    name  = "worker"
     image = docker_image.vote-worker.image_id
-    env = [
-        "GET_HOSTS_FROM=dns"
-    ]
-    host {
-        host = "db"
-        ip = docker_container.db.network_data[0].ip_address
-    }
+    
     networks_advanced {
         name = "back-tier"
     }
 
-     depends_on = [docker_container.db, docker_container.redis]
+    depends_on = [docker_container.db, docker_container.redis]
 
 }
 
@@ -219,7 +201,7 @@ resource "docker_image" "vote-result" {
 
 resource "docker_container" "result" {
 
-    name  = "vote_result"
+    name  = "result"
 
     image = docker_image.vote-result.image_id
 
@@ -230,15 +212,6 @@ resource "docker_container" "result" {
         external = "5001"
     }
 
-    env = [
-        "GET_HOSTS_FROM=dns"
-    ]
-
-    host {
-        host = "db"
-        ip = docker_container.db.network_data[0].ip_address
-    }
-
     networks_advanced {
         name = "back-tier"
     }
@@ -247,5 +220,3 @@ resource "docker_container" "result" {
         name = "front-tier"
     }
 }
-
-
