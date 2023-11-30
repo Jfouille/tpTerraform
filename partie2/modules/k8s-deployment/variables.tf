@@ -56,3 +56,11 @@ variable "port" {
     }) 
     default = null
 }
+
+variable "env" {
+    type = list(object({
+        name       = string
+        value      = string
+    }) )
+    default = null
+}

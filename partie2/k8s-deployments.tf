@@ -49,9 +49,14 @@ module "redis-deployment" {
   }
 
   volume_mount = {
-            name       = "redis-data"
-            mount_path = "/data"
-          }
+        name       = "redis-data"
+        mount_path = "/data"
+  }
+  volume          = {
+      name       = "redis-data"
+      #empty_dir   = {}
+  }
+    
 
 }
 
@@ -64,12 +69,19 @@ module "db-deployment" {
   label_tier      = "db"
   container_name  = "postgres"
   container_image = "postgres:15-alpine"
+
+  env = [
+    { name = "POSTGRES_USER", value = "postgres" },
+    { name = "POSTGRES_PASSWORD", value = "postgres" }
+  ]
+
   port            = {
       name       = "postgres"
       container_port = 5432
   }
   volume          = {
       name       = "db-data"
+      #empty_dir   = {}
   }
   volume_mount    = {
       name       = "db-data"

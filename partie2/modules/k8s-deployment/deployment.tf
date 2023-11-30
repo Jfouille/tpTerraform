@@ -24,6 +24,7 @@ resource "kubernetes_deployment_v1" "deplt" {
 
         dynamic "volume" {
             for_each = var.volume == null ? [] : [1]
+            
             content {
                 name = var.volume.name
                 #empty_dir  = var.volume.empty_dir
@@ -39,6 +40,15 @@ resource "kubernetes_deployment_v1" "deplt" {
             requests = var.resources_requests
           }
 
+          dynamic "env" {
+            for_each = var.env == null ? [] : var.env
+            iterator = item   #optional
+            content {
+                name = item.value.name
+                value = item.value.value
+            }       
+          }
+
           dynamic "port" {
             for_each = var.port == null ? [] : [1]
             content {
@@ -49,14 +59,18 @@ resource "kubernetes_deployment_v1" "deplt" {
 
           ## GESTION ENV POSTRGRES !!!
 
-           dynamic "volume_mount" {
+          
+
+          dynamic "volume_mount" {
             for_each = var.volume_mount == null ? [] : [1]
             content {
                 name = var.volume_mount.name
                 mount_path = var.volume_mount.mount_path
             }       
+          }
 
-            }
+
+
         }
       }
     }
