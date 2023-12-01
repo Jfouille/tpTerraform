@@ -3,7 +3,6 @@ resource "kubernetes_deployment_v1" "deplt" {
     name = var.metadata_name
     labels = {
       App = var.label_app
-      Tier = var.label_tier
     }
   }
   spec {
@@ -17,7 +16,6 @@ resource "kubernetes_deployment_v1" "deplt" {
       metadata {
         labels = {
           App = var.label_app
-          Tier = var.label_tier
         }
       }
       spec {
