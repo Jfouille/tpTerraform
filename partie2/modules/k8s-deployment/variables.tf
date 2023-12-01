@@ -18,14 +18,6 @@ variable "container_image" {
   type = string
 }
 
-variable "resources_requests" {
-  type = map(any)
-  default = {
-    cpu = "100m"
-    memory = "100Mi"
-  }
-}
-
 variable "volume_mount" {
     type = object({
         name       = string

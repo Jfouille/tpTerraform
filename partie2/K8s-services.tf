@@ -8,7 +8,7 @@ module "redis-service" {
   port            = {
       name        = "redis-service"
       port        = 6379
-      target_port = "6379"
+      target_port = 6379
   }
 }
 
@@ -22,7 +22,7 @@ module "db-service" {
   port            = {
       name        = "db-service"
       port        = 5432
-      target_port = "432"
+      target_port = 5432
   }
 }
 
@@ -36,7 +36,7 @@ module "result-service" {
   port            = {
       name        = "result-service"
       port        = 5001
-      target_port = "80"
+      target_port = 80
       node_port   = 31001
   }
 }
@@ -51,7 +51,7 @@ module "vote-service" {
   port            = {
       name        = "vote-service"
       port        = 5000
-      target_port = "80"
+      target_port = 80
       node_port   = 31000
   }
 }

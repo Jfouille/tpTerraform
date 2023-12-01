@@ -3,7 +3,7 @@ resource "kubernetes_service_v1" "srv" {
     name = var.metadata_name
 
     labels = {
-      app = var.label_app
+      App = var.label_app
     }
   }
 
@@ -12,10 +12,11 @@ resource "kubernetes_service_v1" "srv" {
       name        = var.port.name
       port        = var.port.port
       target_port = var.port.target_port
+      node_port   = var.port.node_port
     }
 
     selector = {
-      app = var.selector_app
+      App = var.selector_app
     }
 
     type = var.service_type

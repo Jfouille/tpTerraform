@@ -36,10 +36,6 @@ resource "kubernetes_deployment_v1" "deplt" {
           name  = var.container_name
           image = var.container_image
 
-          resources {
-            requests = var.resources_requests
-          }
-
           dynamic "env" {
             for_each = var.env == null ? [] : var.env
             iterator = item   #optional
@@ -57,10 +53,6 @@ resource "kubernetes_deployment_v1" "deplt" {
             } 
         }
 
-          ## GESTION ENV POSTRGRES !!!
-
-          
-
           dynamic "volume_mount" {
             for_each = var.volume_mount == null ? [] : [1]
             content {
@@ -68,9 +60,6 @@ resource "kubernetes_deployment_v1" "deplt" {
                 mount_path = var.volume_mount.mount_path
             }       
           }
-
-
-
         }
       }
     }

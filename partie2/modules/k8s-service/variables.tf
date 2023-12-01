@@ -10,7 +10,7 @@ variable "port" {
     type = object({
         name        = string
         port        = number
-        target_port = string
+        target_port = number
         node_port   = optional(number)
     }) 
     default = null

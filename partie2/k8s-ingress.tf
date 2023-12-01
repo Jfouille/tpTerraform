@@ -18,7 +18,6 @@ resource "kubernetes_ingress_v1" "result-ingess" {
 resource "kubernetes_ingress_v1" "vote-ingess" {
   metadata {
     name      = "vote-ingress"
-    namespace = "default"
   }
 
   spec {
